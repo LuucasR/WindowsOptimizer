@@ -1,0 +1,28 @@
+WindowsOptimizer 1.0
+====================
+
+Dos modos desde un icono junto al reloj de Windows:
+  - Modo Tradicional: Windows normal.
+  - Modo Trabajo: detiene servicios, tareas y programas innecesarios, activa
+    "Máximo rendimiento" y quita efectos visuales. Ideal para jugar o trabajar
+    con programas pesados (Unreal, Blender, etc.). Todo se restaura al volver.
+
+INSTALAR
+  Doble clic en "Instalar.cmd" (pide permisos de administrador).
+  Se instala en C:\Program Files\WindowsOptimizer con accesos directos en el
+  menú Inicio y en el escritorio.
+
+  También funciona sin instalar: abre WindowsOptimizer.exe directamente.
+  (Si usas "Iniciar con Windows", no muevas el .exe de lugar después.)
+
+USO
+  - Doble clic en el icono (o Ctrl+Alt+W): cambia de modo.
+  - Clic derecho: menú con configuración, idioma (Español / English / 中文),
+    "Liberar RAM ahora", "Iniciar con Windows" y "Reiniciar Modo Trabajo"
+    para aplicar cambios de configuración.
+
+DESINSTALAR
+  Vuelve a Modo Tradicional y ejecuta "Desinstalar.cmd".
+
+Requisitos: Windows 10/11 de 64 bits. No necesita instalar .NET.
+Configuración y registro: C:\ProgramData\WindowsOptimizer
