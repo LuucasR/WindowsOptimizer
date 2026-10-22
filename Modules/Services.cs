@@ -35,7 +35,9 @@ static class Services
                         backups.TryAdd(d.ServiceName, new ServiceBackup(d.ServiceName, null, true));
                     toStop.Add(sc);
                 }
-                backups[name] = new ServiceBackup(name, (int)sc.StartType, running);
+                // Las instancias por usuario (ej. "OneSyncSvc_a05a8") no admiten cambiar el tipo de inicio: solo se detienen.
+                int? start = IsPerUserInstance(sc) ? null : (int)sc.StartType;
+                backups[name] = new ServiceBackup(name, start, running);
             }
             catch (Exception ex) { Log.Write($"Servicio {name}: {ex.Message}"); }
         }
@@ -65,6 +67,14 @@ static class Services
         });
 
         return L.T("sum.services", stopped);
+    }
+
+    const int SERVICE_USERSERVICE_INSTANCE = 0x80;
+
+    static bool IsPerUserInstance(ServiceController sc)
+    {
+        try { return ((int)sc.ServiceType & SERVICE_USERSERVICE_INSTANCE) != 0; }
+        catch { return false; }
     }
 
     public static void Restore(SavedState s)

@@ -6,7 +6,11 @@ namespace WindowsOptimizer;
 sealed class AppConfig
 {
     // Al subir este número, las listas por defecto nuevas se suman a la config del usuario (sin borrar lo suyo).
-    const int CurrentVersion = 2;
+    const int CurrentVersion = 3;
+
+    // Entradas que estuvieron en las listas por defecto y se quitaron por causar problemas.
+    // AMDInstallManager: al cerrarlo, AMD lo relanza mostrando la ventana del instalador.
+    static readonly string[] RetiredProcesses = { "AMDInstallManager" };
 
     public int Version { get; set; }
     public string? Language { get; set; }   // "es", "en", "zh"; vacío = idioma de Windows
@@ -73,6 +77,7 @@ sealed class AppConfig
         ProtectedServices = Union(ProtectedServices, d.ProtectedServices);
         ScheduledTasksToDisable = Union(ScheduledTasksToDisable, d.ScheduledTasksToDisable);
         ProcessesToClose = Union(ProcessesToClose, d.ProcessesToClose);
+        ProcessesToClose.RemoveAll(p => RetiredProcesses.Contains(p, StringComparer.OrdinalIgnoreCase));
         // Un servicio que ahora es protegido no debe quedar en la lista de detener.
         ServicesToStop.RemoveAll(s => !s.EndsWith('*') && Glob.Any(ProtectedServices, s));
         Language ??= d.Language;
@@ -88,7 +93,7 @@ sealed class AppConfig
   //  Lo más cómodo es editarla desde el menú del icono > "Editar configuración...".
   //  Todo lo que se cambia se guarda antes y se restaura al volver a Tradicional.
   // =====================================================================
-  "Version": 2,
+  "Version": 3,
   "Language": "es",   // "es" = Español, "en" = English, "zh" = 中文
 
   // Servicios que se DETIENEN y se ponen en "Deshabilitado" mientras dure el modo.
@@ -194,7 +199,7 @@ sealed class AppConfig
     "CrossDeviceResume", "Copilot", "ms-teams", "Teams", "GameBar", "GameBarFTServer", "SkypeApp",
     "HxTsr", "HxOutlook", "olk", "Cortana", "CompatTelRunner", "DeviceCensus", "MicrosoftEdgeUpdate",
     // Actualizadores y utilidades de fondo
-    "GoogleUpdate", "BraveUpdate", "AMDInstallManager", "AppleMobileDeviceProcess", "iTunesHelper", "adb",
+    "GoogleUpdate", "BraveUpdate", "AppleMobileDeviceProcess", "iTunesHelper", "adb",
     // Acceso remoto (Parsec no se toca)
     "AnyDesk", "TeamViewer"
     // Añade los tuyos, por ejemplo:
