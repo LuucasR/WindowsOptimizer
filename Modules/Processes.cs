@@ -7,6 +7,23 @@ static class Processes
     static string Normalize(string name) =>
         name.EndsWith(".exe", StringComparison.OrdinalIgnoreCase) ? name[..^4] : name;
 
+    // Procesos de fondo que nunca deben reabrirse: lanzarlos "a mano" abre ventanas que el usuario no pidió
+    // (ej. AMDInstallManager abre el instalador de AMD). Windows o su servicio los arranca solo cuando hace falta.
+    static readonly string[] NeverRelaunch =
+    {
+        "Widgets", "WidgetService", "PhoneExperienceHost", "YourPhone", "CrossDeviceService", "CrossDeviceResume",
+        "Copilot", "GameBar", "GameBarFTServer", "HxTsr", "HxOutlook", "Cortana", "CompatTelRunner", "DeviceCensus",
+        "AppleMobileDeviceProcess", "iTunesHelper", "adb", "AnyDesk", "TeamViewer",
+    };
+    static readonly string[] NeverRelaunchWords = { "update", "install", "setup", "helper", "service", "crash" };
+
+    public static bool CanRelaunch(string name)
+    {
+        name = Normalize(name);
+        return !NeverRelaunch.Contains(name, StringComparer.OrdinalIgnoreCase)
+               && !NeverRelaunchWords.Any(w => name.Contains(w, StringComparison.OrdinalIgnoreCase));
+    }
+
     public static string CloseApps(AppConfig cfg, SavedState s)
     {
         var victims = new List<Process>();
@@ -15,7 +32,7 @@ static class Processes
             var procs = Process.GetProcessesByName(name);
             if (procs.Length == 0) continue;
 
-            if (cfg.RelaunchOnRestore.Any(r => Normalize(r).Equals(name, StringComparison.OrdinalIgnoreCase)))
+            if (CanRelaunch(name) && cfg.RelaunchOnRestore.Any(r => Normalize(r).Equals(name, StringComparison.OrdinalIgnoreCase)))
             {
                 var path = procs.Select(TryPath).FirstOrDefault(p => p != null);
                 if (path != null) s.ClosedApps.Add(new ClosedApp(name, path));
@@ -43,7 +60,7 @@ static class Processes
     {
         foreach (var app in s.ClosedApps)
         {
-            if (Process.GetProcessesByName(app.Name).Length > 0 || !File.Exists(app.Path)) continue;
+            if (!CanRelaunch(app.Name) || Process.GetProcessesByName(app.Name).Length > 0 || !File.Exists(app.Path)) continue;
             try { Shell.StartUnelevated(app.Path); }
             catch (Exception ex) { Log.Write($"No se pudo reabrir {app.Name}: {ex.Message}"); }
         }

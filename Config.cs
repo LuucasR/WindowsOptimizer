@@ -6,7 +6,7 @@ namespace WindowsOptimizer;
 sealed class AppConfig
 {
     // Al subir este número, las listas por defecto nuevas se suman a la config del usuario (sin borrar lo suyo).
-    const int CurrentVersion = 3;
+    const int CurrentVersion = 4;
 
     // Entradas que estuvieron en las listas por defecto y se quitaron por causar problemas.
     // AMDInstallManager: al cerrarlo, AMD lo relanza mostrando la ventana del instalador.
@@ -78,6 +78,8 @@ sealed class AppConfig
         ScheduledTasksToDisable = Union(ScheduledTasksToDisable, d.ScheduledTasksToDisable);
         ProcessesToClose = Union(ProcessesToClose, d.ProcessesToClose);
         ProcessesToClose.RemoveAll(p => RetiredProcesses.Contains(p, StringComparer.OrdinalIgnoreCase));
+        // v4: la casilla "reabrir" era ambigua y se marcaban procesos de fondo; se dejan solo los que tiene sentido reabrir.
+        RelaunchOnRestore.RemoveAll(p => !Modules.Processes.CanRelaunch(p) || RetiredProcesses.Contains(p, StringComparer.OrdinalIgnoreCase));
         // Un servicio que ahora es protegido no debe quedar en la lista de detener.
         ServicesToStop.RemoveAll(s => !s.EndsWith('*') && Glob.Any(ProtectedServices, s));
         Language ??= d.Language;
@@ -93,7 +95,7 @@ sealed class AppConfig
   //  Lo más cómodo es editarla desde el menú del icono > "Editar configuración...".
   //  Todo lo que se cambia se guarda antes y se restaura al volver a Tradicional.
   // =====================================================================
-  "Version": 3,
+  "Version": 4,
   "Language": "es",   // "es" = Español, "en" = English, "zh" = 中文
 
   // Servicios que se DETIENEN y se ponen en "Deshabilitado" mientras dure el modo.

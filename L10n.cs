@@ -100,9 +100,17 @@ static class L
         ["cfg.tab.close"] = new[] { "Programas a cerrar", "Programs to close", "要关闭的程序" },
         ["cfg.tab.close.desc"] = new[]
         {
-            "Se cierran al activar el Modo Trabajo. Los marcados ☑ se vuelven a abrir al volver a Tradicional.",
-            "Closed when Work mode is enabled. Checked ☑ ones reopen when you go back to Traditional.",
-            "启用工作模式时关闭。勾选 ☑ 的程序会在返回传统模式时重新打开。",
+            "TODOS los programas de esta tabla se cierran al activar el Modo Trabajo. La casilla solo indica si se vuelven a abrir al volver a Tradicional.",
+            "ALL programs in this table are closed when Work mode is enabled. The checkbox only sets whether they reopen when you go back to Traditional.",
+            "启用工作模式时会关闭此表中的所有程序。复选框仅表示返回传统模式时是否重新打开。",
+        },
+        ["cfg.col.program"] = new[] { "Programa (se cierra)", "Program (gets closed)", "程序（将被关闭）" },
+        ["cfg.col.relaunch"] = new[] { "¿Reabrir al volver?", "Reopen afterwards?", "恢复时重新打开？" },
+        ["cfg.noRelaunch"] = new[]
+        {
+            "Proceso de fondo o actualizador: nunca se reabre (Windows lo inicia solo cuando hace falta).",
+            "Background process or updater: never reopened (Windows starts it when needed).",
+            "后台进程或更新程序：不会重新打开（Windows 会在需要时自动启动）。",
         },
         ["cfg.tab.priority"] = new[] { "Prioridad alta", "High priority", "高优先级" },
         ["cfg.tab.priority.desc"] = new[]

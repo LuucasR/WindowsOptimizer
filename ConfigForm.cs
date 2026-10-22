@@ -7,7 +7,12 @@ namespace WindowsOptimizer;
 sealed class ConfigForm : Form
 {
     readonly AppConfig cfg;
-    readonly CheckedListBox closeList = NewCheckedList();
+    readonly DataGridView closeGrid = new()
+    {
+        Dock = DockStyle.Fill, AllowUserToAddRows = false, AllowUserToResizeRows = false, RowHeadersVisible = false,
+        SelectionMode = DataGridViewSelectionMode.FullRowSelect, AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill,
+        BackgroundColor = SystemColors.Window, BorderStyle = BorderStyle.FixedSingle,
+    };
     readonly ListBox priorityList = NewList();
     readonly ListBox exclusionList = NewList();
     readonly CheckedListBox serviceList = NewCheckedList();
@@ -71,11 +76,45 @@ sealed class ConfigForm : Form
 
     TabPage BuildCloseTab()
     {
+        closeGrid.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = L.T("cfg.col.program"), ReadOnly = true, FillWeight = 70 });
+        closeGrid.Columns.Add(new DataGridViewCheckBoxColumn { HeaderText = L.T("cfg.col.relaunch"), FillWeight = 30 });
+        // Los clics en la casilla se confirman al instante (si no, solo se guardan al salir de la celda).
+        closeGrid.CurrentCellDirtyStateChanged += (_, _) =>
+        {
+            if (closeGrid.IsCurrentCellDirty) closeGrid.CommitEdit(DataGridViewDataErrorContexts.Commit);
+        };
         foreach (var name in cfg.ProcessesToClose)
-            closeList.Items.Add(name, cfg.RelaunchOnRestore.Contains(name, StringComparer.OrdinalIgnoreCase));
+            AddCloseRow(name, cfg.RelaunchOnRestore.Contains(name, StringComparer.OrdinalIgnoreCase));
 
-        return Tab(L.T("cfg.tab.close"), L.T("cfg.tab.close.desc"),
-            closeList, ProgramButtons(name => AddUnique(closeList, name)));
+        var remove = new Button { Text = L.T("cfg.remove"), AutoSize = true, Tag = "remove" };
+        remove.Click += (_, _) =>
+        {
+            foreach (DataGridViewRow row in closeGrid.SelectedRows) closeGrid.Rows.Remove(row);
+        };
+        var buttons = ProgramButtons(name => AddCloseRow(name, false));
+        buttons.Controls.Add(remove);
+
+        var page = new TabPage(L.T("cfg.tab.close")) { Padding = new Padding(8), UseVisualStyleBackColor = true };
+        page.Controls.Add(closeGrid);
+        page.Controls.Add(buttons);
+        page.Controls.Add(new Label { Text = L.T("cfg.tab.close.desc"), Dock = DockStyle.Top, AutoSize = false, Height = 40, ForeColor = SystemColors.GrayText });
+        closeGrid.BringToFront();
+        return page;
+    }
+
+    void AddCloseRow(string name, bool relaunch)
+    {
+        if (closeGrid.Rows.Cast<DataGridViewRow>().Any(r => name.Equals((string)r.Cells[0].Value, StringComparison.OrdinalIgnoreCase))) return;
+        bool allowed = Modules.Processes.CanRelaunch(name);
+        int i = closeGrid.Rows.Add(name, allowed && relaunch);
+        // Procesos de fondo/actualizadores: nunca se reabren, así que la casilla queda bloqueada.
+        if (!allowed)
+        {
+            var cell = closeGrid.Rows[i].Cells[1];
+            cell.ReadOnly = true;
+            cell.Style.BackColor = SystemColors.Control;
+            cell.ToolTipText = L.T("cfg.noRelaunch");
+        }
     }
 
     TabPage BuildPriorityTab()
@@ -159,9 +198,10 @@ sealed class ConfigForm : Form
 
     void Collect()
     {
-        cfg.ProcessesToClose = closeList.Items.Cast<string>().ToList();
+        var rows = closeGrid.Rows.Cast<DataGridViewRow>().ToList();
+        cfg.ProcessesToClose = rows.Select(r => (string)r.Cells[0].Value).ToList();
         // Se conservan entradas de "reabrir" de programas que no están en la lista de cierre (no hacen daño).
-        cfg.RelaunchOnRestore = closeList.CheckedItems.Cast<string>()
+        cfg.RelaunchOnRestore = rows.Where(r => r.Cells[1].Value is true).Select(r => (string)r.Cells[0].Value)
             .Concat(cfg.RelaunchOnRestore.Where(r => !cfg.ProcessesToClose.Contains(r, StringComparer.OrdinalIgnoreCase)))
             .Distinct(StringComparer.OrdinalIgnoreCase).ToList();
         cfg.ProcessesToPrioritize = priorityList.Items.Cast<string>().ToList();
