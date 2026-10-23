@@ -6,7 +6,7 @@ namespace WindowsOptimizer;
 sealed class AppConfig
 {
     // Al subir este número, las listas por defecto nuevas se suman a la config del usuario (sin borrar lo suyo).
-    const int CurrentVersion = 4;
+    const int CurrentVersion = 5;
 
     // Entradas que estuvieron en las listas por defecto y se quitaron por causar problemas.
     // AMDInstallManager: al cerrarlo, AMD lo relanza mostrando la ventana del instalador.
@@ -95,7 +95,7 @@ sealed class AppConfig
   //  Lo más cómodo es editarla desde el menú del icono > "Editar configuración...".
   //  Todo lo que se cambia se guarda antes y se restaura al volver a Tradicional.
   // =====================================================================
-  "Version": 4,
+  "Version": 5,
   "Language": "es",   // "es" = Español, "en" = English, "zh" = 中文
 
   // Servicios que se DETIENEN y se ponen en "Deshabilitado" mientras dure el modo.
@@ -130,9 +130,7 @@ sealed class AppConfig
     "DmEnrollmentSvc", "EntAppSvc", "workfolderssvc", "Wecsvc", "MSDTC", "AxInstSV", "embeddedmode",
     "NaturalAuthentication", "wlpasvc", "vmic*",
     // Actualizadores y ayudantes de otros programas
-    "edgeupdate", "edgeupdatem", "MicrosoftEdgeElevationService",
-    "gupdate", "gupdatem", "GoogleUpdater*", "GoogleChromeElevationService",
-    "brave", "bravem", "BraveElevationService",
+    "edgeupdate", "edgeupdatem", "gupdate", "gupdatem", "GoogleUpdater*", "brave", "bravem",
     "AsusUpdateCheck", "iCUEUpdateService", "EpicGamesUpdater", "battlenet_helpersvc", "UpcElevationService",
     "LGHUBUpdaterService", "VSInstallerElevationService", "VSStandardCollectorService*", "JetBrainsEtwHost*",
     // Programas de terceros que corren siempre sin hacer falta
@@ -166,7 +164,9 @@ sealed class AppConfig
     "XboxGipSvc", "GameInput*", "AMD*", "Corsair*", "Parsec*",
     // Juegos, launchers y anti-cheats
     "GamingServices*", "Steam Client Service", "EpicOnlineServices", "EABackgroundService",
-    "EasyAntiCheat*", "BEService", "vgc", "FACEIT*"
+    "EasyAntiCheat*", "BEService", "vgc", "FACEIT*",
+    // Navegadores: descifran las cookies con este servicio; deshabilitado, se cierran todas las sesiones
+    "GoogleChromeElevationService", "BraveElevationService", "MicrosoftEdgeElevationService"
   ],
 
   // Tareas programadas que se deshabilitan (y se reactivan al restaurar). "*" = comodín en el nombre.
